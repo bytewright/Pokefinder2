@@ -64,7 +64,7 @@ if __name__ == '__main__':
     else:
         insert_mock_data()
 
-    app = Pogom(__name__)
+    app = Pogom(__name__, args)
 
     if args.cors:
         CORS(app);

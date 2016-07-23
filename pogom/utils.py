@@ -8,6 +8,7 @@ import re
 import uuid
 import os
 import json
+import ast
 from datetime import datetime, timedelta
 
 from . import config
@@ -20,7 +21,7 @@ def parse_unicode(bytestring):
     
 def parse_config(args):
     Config = ConfigParser.ConfigParser()
-    Config.read(os.path.join(os.path.dirname(__file__), '../config/config.ini'))
+    Config.read(os.path.join(os.path.dirname(__file__), '../config/my_config.ini'))
     args.auth_service = Config.get('Authentication', 'Service')
     args.username = Config.get('Authentication', 'Username')
     args.password = Config.get('Authentication', 'Password')
@@ -30,7 +31,10 @@ def parse_config(args):
     if Config.get('Misc', 'Google_Maps_API_Key') :
         args.gmaps_key = Config.get('Misc', 'Google_Maps_API_Key') 
     args.host = Config.get('Misc', 'Host') 
-    args.port = Config.get('Misc', 'Port') 
+    args.port = Config.get('Misc', 'Port')
+    args.ignore_pokemon = ast.literal_eval(Config.get('Misc', 'Ignore_Pokemon'))
+    args.locations = ast.literal_eval(Config.get('Misc', 'Locations'))
+
     return args
 
 def get_args():
