@@ -83,6 +83,7 @@ if __name__ == '__main__':
         search_thread.start()
 
     app = Pogom(__name__)
+    app.set_my_params([int(y) for y in args.ignore_list.split(',')], args.location_list.split("-"))
 
     if args.cors:
         CORS(app);

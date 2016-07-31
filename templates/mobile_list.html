@@ -29,7 +29,7 @@
         <label><input type="checkbox" id="use-loc" onchange="toggleLocation()">Use device location</label>
       </div>
     </div>
-    {% for pokemon in pokemon_list[:20] %}
+    {% for pokemon in pokemon_list %}
     <a class="card" href='geo:0,0?q={{pokemon.latitude}},{{pokemon.longitude}}({{pokemon.name}})'>
       <img height='60' width='80' src='static/pixel_icons/{{pokemon.id}}.png'>
       <div>
@@ -38,7 +38,18 @@
       </div>
     </a>
     {% endfor %}
-    <a class="origin" href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>origin location</a>
+    <h3>---------</h2>
+    {% for pokemon in pokemon_list_low %}
+    <a class="card" href='geo:0,0?q={{pokemon.latitude}},{{pokemon.longitude}}({{pokemon.name}})'>
+      <img height='60' width='80' src='static/pixel_icons/{{pokemon.id}}.png'>
+      <div>
+        <h3>{{pokemon.name}} <small>- {{pokemon.distance}}m ({{pokemon.card_dir}})</small></h3>
+        <span></span><input type="hidden" value="{{pokemon.disappear_time}}">
+      </div>
+    </a>
+    {% endfor %}
+    <a class="origin" href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>scan origin</a> 
+    <a class="origin" href='/relocator'>relocate scan</a>
     <script>
       var msg = document.getElementById('msg');
       var useLoc = document.getElementById('use-loc');
@@ -62,8 +73,8 @@
             alert('Failed to get location: ' + err.message);
           }, {
             enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 5000
+            timeout: 10000,
+            maximumAge: 10000
           });
         } else {
           alert('Your device does not support web geolocation');
@@ -77,7 +88,7 @@
           var disappearsAt = new Date(utcString);
           disappearsAt.setMinutes(disappearsAt.getMinutes()-disappearsAt.getTimezoneOffset());
           var secondsLeft = (disappearsAt.getTime()-Date.now())/1000;
-          var timeLeft = secondsLeft > 0 ? Math.floor(secondsLeft / 60) + ' min ' + Math.floor(secondsLeft % 60) + ' sec left' : '(expired)';
+          var timeLeft = secondsLeft > 0 ? Math.floor(secondsLeft / 60) + 'm ' + Math.floor(secondsLeft % 60) + 's' : '(expired)';
           cards[i].querySelector('span').innerText = timeLeft;
         }
       }

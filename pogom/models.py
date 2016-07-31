@@ -121,6 +121,19 @@ class Pokemon(BaseModel):
 
         return pokemons
 
+    @classmethod
+    def get_all_in_time_frame(cls, hours):
+        query = (Pokemon
+                 .select()
+                 .where(Pokemon.disappear_time > datetime.utcnow() - timedelta(hours=hours))
+                 .dicts())
+        pokemons = []
+        for p in query:
+            p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
+            pokemons.append(p)
+
+        return pokemons
+
 
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True, max_length=50)

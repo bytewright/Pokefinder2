@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p>imported locations from settings file:</p>
+<table>
+{% for location in locations %}
+<tr>
+	<td>
+	<form action='next_loc' method='post'>
+	<input type='hidden' name='lat' value='{{ location.latitude }}'/>
+    <input type='hidden' name='lon' value='{{ location.longitude }}'/>
+	<input type='submit' value='Set' style='height:60px; width:100px' />
+	</form>
+	</td>
+	<td>
+	<--
+	</td>
+	<td>
+		<a href='geo:0,0?q={{ location.latitude }},{{ location.longitude }}({{ location.name }})'>{{ location.name }}</a>
+	</td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>

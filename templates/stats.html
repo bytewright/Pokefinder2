@@ -1,0 +1,10 @@
+<table border="1">
+{% for pokemon in statlist %}
+<tr>
+<td>
+<img height='60' width='80' src='static/pixel_icons/{{ pokemon[0] }}.png'>
+</td>
+<td>{{ pokemon[1] }}</td>
+</tr>
+{% endfor %}
+</table>
