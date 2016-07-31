@@ -3,6 +3,9 @@
   <head>
     <title>Nearby Pokémon</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% if auto_reload %}
+    <meta http-equiv="refresh" content="5; URL=/mobile?auto_reload=True">
+    {% endif %}
     <style>
       body{font-family:sans-serif}
       h2{margin-top:10px;float:left}
@@ -14,6 +17,9 @@
       span{color:#777}
       .origin{position:relative;top:20px;padding-bottom:10px}
       .head{display:inline-block;width:100%;}
+      .foot{display:inline-block;width:100%;}
+      .reloc{float:center;padding-bottom:10px}
+      .reloc button{padding:10px;border:solid 1px #ddd;background:white;font-size:17px;border-radius:3px;color:#333;cursor:pointer;width:140px}
       .nav{float:right;padding-bottom:10px}
       .nav button{padding:10px;border:solid 1px #ddd;background:white;font-size:17px;border-radius:3px;color:#333;cursor:pointer;width:140px}
       #msg{color:#ddd;font-size:70%}
@@ -48,8 +54,14 @@
       </div>
     </a>
     {% endfor %}
-    <a class="origin" href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>scan origin</a> 
-    <a class="origin" href='/relocator'>relocate scan</a>
+    <center>
+    <div class="foot">
+        <div class="reloc">
+            <button onclick="relocate()">Relocate</button>
+        </div>
+    </div>
+    <a class="origin" href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>scan origin</a>
+    </center>
     <script>
       var msg = document.getElementById('msg');
       var useLoc = document.getElementById('use-loc');
@@ -75,6 +87,40 @@
             enableHighAccuracy: true,
             timeout: 10000,
             maximumAge: 10000
+          });
+        } else {
+          alert('Your device does not support web geolocation');
+        }
+      }
+      function relocate() {
+      if ("geolocation" in navigator) {
+          msg.innerText='Getting location...';
+          navigator.geolocation.getCurrentPosition(function(p) {
+            msg.innerText='Reloading...';
+            var form = document.createElement("form");
+            form.setAttribute("method", "post");
+            form.setAttribute("action", "/next_loc");
+            
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", "lat");
+            hiddenField.setAttribute("value", p.coords.latitude);
+            form.appendChild(hiddenField);
+            var hiddenField = document.createElement("input");
+            hiddenField.setAttribute("type", "hidden");
+            hiddenField.setAttribute("name", "lon");
+            hiddenField.setAttribute("value", p.coords.longitude);
+            form.appendChild(hiddenField);
+            
+            document.body.appendChild(form);
+            form.submit();
+          }, function(err) {
+            msg.innerText='';
+            alert('Failed to get location: ' + err.message);
+          }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 5000
           });
         } else {
           alert('Your device does not support web geolocation');

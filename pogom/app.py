@@ -138,7 +138,7 @@ class Pogom(Flask):
         else:
             config['NEXT_LOCATION'] = {'lat': lat, 'lon': lon}
             log.info('Changing next location: %s,%s' % (lat, lon))
-            return 'ok'
+            return '<meta http-equiv="refresh" content="1; URL=/mobile">'
 
     def list_pokemon(self):
         # todo: check if client is android/iOS/Desktop for geolink, currently
@@ -149,6 +149,7 @@ class Pogom(Flask):
         # Allow client to specify location
         lat = request.args.get('lat', config['ORIGINAL_LATITUDE'], type=float)
         lon = request.args.get('lon', config['ORIGINAL_LONGITUDE'], type=float)
+        auto_reload = request.args.get('auto_reload', False, type=bool)
         origin_point = LatLng.from_degrees(lat, lon)
 
         for pokemon in Pokemon.get_active(None, None, None, None):
@@ -184,6 +185,7 @@ class Pogom(Flask):
         return render_template('mobile_list.html',
                                pokemon_list=pokemon_list,
                                pokemon_list_low=pokemon_list_low,
+                               auto_reload=auto_reload,
                                origin_lat=lat,
                                origin_lng=lon)
 
