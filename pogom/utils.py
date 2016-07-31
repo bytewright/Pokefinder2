@@ -32,6 +32,7 @@ def parse_config(args):
         args.gmaps_key = Config.get('Misc', 'Google_Maps_API_Key') 
     args.host = Config.get('Misc', 'Host') 
     args.port = Config.get('Misc', 'Port')
+    args.locale = Config.get('Misc', 'Locale')
     args.ignore_pokemon = ast.literal_eval(Config.get('Misc', 'Ignore_Pokemon'))
     args.locations = ast.literal_eval(Config.get('Misc', 'Locations'))
 

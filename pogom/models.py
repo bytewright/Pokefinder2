@@ -55,6 +55,20 @@ class Pokemon(BaseModel):
 
         return pokemons
 
+    @classmethod
+    def get_all_today(cls):
+        query = (Pokemon
+                 .select()
+                 .where(Pokemon.disappear_time > datetime.today().replace(hour=0, minute=0, second=0))
+                 .dicts())
+
+        pokemons = []
+        for p in query:
+            p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
+            pokemons.append(p)
+
+        return pokemons
+
 
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True)

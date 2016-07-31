@@ -1,3 +1,6 @@
+{% if autorefresh %}
+<meta http-equiv="refresh" content="5; URL=/home_list">
+{% endif %}
 <table border="1">
 {% for pokemon in pokemon_list %}
 <tr>
@@ -14,7 +17,11 @@
 {% for pokemon in pokemon_list_low %}
 <tr>
 <td>
-<a href='geo:0,0?q={{pokemon.latitude}},{{pokemon.longitude}}({{pokemon.name}})'>
+{% if not client %}
+    <a href='geo:0,0?q={{pokemon.latitude}},{{pokemon.longitude}}({{pokemon.name}})'>
+{% else %}
+    <a href=\'https://maps.google.com/maps?q=loc:{{pokemon.latitude}},{{pokemon.longitude}}'>
+{% endif %}
 <img height='60' width='80' src='static/pixel_icons/{{pokemon.id}}.png'>
 </a>
 </td>
@@ -22,5 +29,15 @@
 <td>{{pokemon.distance}}m ({{pokemon.card_dir}})</td>
 </tr>
 {% endfor %}
+<b>
+<tr>
+<td><a href='locations'>locations</a></td>
+<td>
+<a href='next_loc'>locator</a></td>
+<td>
+<a href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>origin</a>
+</td></tr>
+</b>
 </table>
-<a href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>scan origin</a>
+
+

@@ -20,8 +20,16 @@ class Pogom(Flask):
         self.route("/loc", methods=['GET'])(self.loc)
         self.route("/next_loc", methods=['GET', 'POST'])(self.next_loc)
         self.route("/mobile", methods=['GET'])(self.list_pokemon)
+        self.route("/home_list", methods=['GET'])(self.home_list)
+        self.route("/home_mode", methods=['GET'])(self.home_mode)
         self.route("/locations", methods=['GET'])(self.get_saved_locations)
+        self.route("/stats", methods=['GET'])(self.get_stats)
+        self.route("/ignore/<int:post_id>", methods=['GET'])(self.add_ignore)
         self.setting = args
+
+    def add_ignore(self, new_id):
+        self.setting.ignore_pokemon.append(int(new_id))
+        return self.setting.ignore_pokemon
 
     def fullmap(self):
         return render_template('map.html',
@@ -77,7 +85,7 @@ class Pogom(Flask):
             else:
                 config['ORIGINAL_LATITUDE'] = lat
                 config['ORIGINAL_LONGITUDE'] = lon
-                return 'ok'
+                return 'ok<br><a href=\'mobile\'>locations</a>'
 
     def list_pokemon(self):
         # todo: check if client is android/iOS/Desktop for geolink, currently only supports android
@@ -109,6 +117,68 @@ class Pogom(Flask):
         pokemon_list = [y[0] for y in sorted(pokemon_list, key=lambda x: x[1])]
         pokemon_list_low = [y[0] for y in sorted(pokemon_list_low, key=lambda x: x[1])]
         return render_template('mobile_list.html',
+                               pokemon_list=pokemon_list,
+                               pokemon_list_low=pokemon_list_low,
+                               origin_lat=config['ORIGINAL_LATITUDE'],
+                               origin_lng=config['ORIGINAL_LONGITUDE'])
+
+    def get_stats(self):
+        stat_dict = {}
+
+        for i in range(152):  # 0 is always empty
+            stat_dict[str(i)] = 0
+        for pokemon in Pokemon.get_all_today():
+            stat_dict[str(pokemon['pokemon_id'])] += 1
+        stat_list = []
+        stat_list_ignore = []
+        for i in range(152):
+            if stat_dict[str(i)] > 0:
+                if i in self.setting.ignore_pokemon:
+                    stat_list_ignore.append((i, stat_dict[str(i)]))
+                else:
+                    stat_list.append((i, stat_dict[str(i)]))
+        stat_list = sorted(stat_list, key=lambda x: x[1], reverse=True)
+        stat_list_ignore = sorted(stat_list_ignore, key=lambda x: x[1], reverse=True)
+        return render_template('stats.html', statlist=(stat_list+stat_list_ignore))
+
+    def home_mode(self):
+        return render_template('home_mode.html')
+
+    def home_list(self):
+        # todo: check if client is android/iOS/Desktop for geolink, currently only supports android
+        pokemon_list = []
+        pokemon_list_low = []
+        origin_point = LatLng.from_degrees(config['ORIGINAL_LATITUDE'], config['ORIGINAL_LONGITUDE'])
+        for pokemon in Pokemon.get_active():
+            pokemon_point = LatLng.from_degrees(pokemon['latitude'], pokemon['longitude'])
+            diff = pokemon_point - origin_point
+            diff_lat = diff.lat().degrees
+            diff_lng = diff.lng().degrees
+            direction = (('N' if diff_lat >= 0 else 'S') if abs(diff_lat) > 1e-4 else '') + (
+                ('E' if diff_lng >= 0 else 'W') if abs(diff_lng) > 1e-4 else '')
+            entry = {
+                'id': pokemon['pokemon_id'],
+                'name': pokemon['pokemon_name'],
+                'card_dir': direction,
+                'distance': int(origin_point.get_distance(pokemon_point).radians * 6366468.241830914),
+                'time_to_disappear': (
+                '%02dm %02ds' % (divmod((pokemon['disappear_time'] - datetime.utcnow()).seconds, 60))).replace('00m ', ''),
+                'latitude': pokemon['latitude'],
+                'longitude': pokemon['longitude']
+            }
+            if int(entry['distance']) > 1000:
+                continue
+            if entry['id'] in self.setting.ignore_pokemon:
+                if int(entry['distance']) < 130:
+                    pokemon_list_low.append((entry, entry['distance']))
+                # else ignore
+            else:
+                pokemon_list.append((entry, entry['distance']))
+        pokemon_list = [y[0] for y in sorted(pokemon_list, key=lambda x: x[1])]
+        pokemon_list_low = [y[0] for y in sorted(pokemon_list_low, key=lambda x: x[1])]
+        return render_template('mobile_list.html',
+                               autorefresh=True,
+                               client='desktop',
                                pokemon_list=pokemon_list,
                                pokemon_list_low=pokemon_list_low,
                                origin_lat=config['ORIGINAL_LATITUDE'],
